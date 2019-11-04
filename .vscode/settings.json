@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "i2c-dev.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "gpio.h": "c",
+        "stdint.h": "c",
+        "cstdint": "c",
+        "files.h": "c",
+        "ioctl.h": "c"
+    }
+}
