@@ -1,4 +1,4 @@
 # exclude everything except directory foo/bar
 .vscode/
-/*.o
-/gp
+*.o
+gp
