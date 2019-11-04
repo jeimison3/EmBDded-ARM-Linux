@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "files.h"
+#include <string.h>
+
+#define MAX_GPIOS 256
+
 #include "gpioPins.h"
 
 #define GPIO(X,Y) ((X*32)+Y)
@@ -14,7 +19,21 @@
         delayMicrosseconds(MS*1000, CLK_TIME)
 
 int main(){
+    #ifdef DEBUG
+    printf("Compilado com -DDEBUG\n");
+    #endif
     clock_t timerClk;
+
+    char input[200];
+    while(1){
+        le_arquivo("/dev/ttyO0", input);
+        if(strlen(input) > 0){
+            printf("%s", input);
+        }
+    }
+
+    exit(0);
+
     pinMode(GPIO(1,21), OUTPUT);
     pinMode(GPIO(1,22), OUTPUT);
     pinMode(GPIO(1,23), OUTPUT);
@@ -24,6 +43,7 @@ int main(){
         digitalWrite(GPIO(1,21), !digitalRead(GPIO(1,21)) );
         delay(1000, timerClk);
     }
+    
     
     return 0;
 }

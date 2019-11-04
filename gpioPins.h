@@ -6,6 +6,10 @@
 #define __GPIOController
     #include <stdint.h>
 
+    #ifndef MAX_GPIOS
+        #define MAX_GPIOS 256
+    #endif
+
     typedef enum{
         OUTPUT = 0,
         INPUT

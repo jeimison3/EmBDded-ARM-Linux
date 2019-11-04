@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "exceptions.h"
 #include "gpioPins.h"
 #include "files.h"
 
@@ -34,31 +36,43 @@ void gpio_free(){
 }
 
 void pinMode(uint32_t pin, GPIO_DIRECTION dir){
-    char * pinStr = "";
-    sprintf(pinStr, "%d\n", pin);
-    escreve_arquivo("/sys/class/gpio/export", pinStr, strlen(pinStr)+1);
+    if(pin >= MAX_GPIOS){
+        FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
+    }
 
-    char * retPath = "";
+    char pinStr[200];
+    sprintf(pinStr, "%d", pin);
+    escreve_arquivo("/sys/class/gpio/export", pinStr);
+
+    char retPath[200];
     getGPIOStringProp(pin, "direction", retPath);
-    escreve_arquivo(retPath, (dir ? "in\n" : "out\n"), (dir ? 3 : 4) );
+    escreve_arquivo(retPath, (dir ? "in" : "out"));
 }
 
 void digitalWrite(uint32_t pin, GPIO_VALUE val){
-    char * retPath = "";
+    if(pin >= MAX_GPIOS){
+        FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
+    }
+
+    char retPath[200];
     getGPIOStringProp(pin, "value", retPath);
-    escreve_arquivo(retPath, (val ? "1\n" : "0\n"), 2 );
+    escreve_arquivo(retPath, (val ? "1" : "0") );
 }
 
 GPIO_VALUE digitalRead(uint32_t pin){
-    char * retPath = "";
-    char * ret = "";
+    if(pin >= MAX_GPIOS){
+        FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
+    }
+    
+    char retPath[200];
+    char ret[200];
     getGPIOStringProp(pin, "value", retPath);
     
     #ifndef DEBUG
     le_arquivo(retPath, ret);
     #else
     size_t sizeOut = le_arquivo(retPath, ret);
-    printf("digitalRead> sizeRet: %d bytes", sizeOut);
+    printf("digitalRead> sizeRet: %d bytes\n", sizeOut);
     #endif
     
     return (GPIO_VALUE) (ret[0] == '1');

@@ -7,6 +7,8 @@
         "stdint.h": "c",
         "cstdint": "c",
         "files.h": "c",
-        "ioctl.h": "c"
+        "ioctl.h": "c",
+        "string.h": "c",
+        "gpiopins.h": "c"
     }
 }

@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# embdded-arm-linux        Projeto de J. Moreno
+#
+
+
+start() {
+	printf "Iniciando embdded-arm-linux: "
+	/root/embdded-arm-linux&
+	touch /var/lock/embdded
+	echo "OK"
+}
+stop() {
+	printf "Parando embdded-arm-linux: "
+	killall embdded-arm-linux
+	rm -f /var/lock/embdded-arm-linux
+	echo "OK"
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+

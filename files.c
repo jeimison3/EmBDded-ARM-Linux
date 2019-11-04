@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void escreve_arquivo(char* arquivo, char* texto, int tam_texto){
+void escreve_arquivo(char* arquivo, char* texto){
+	#ifdef DEBUG
+	printf("\"%s\" >> %s\n",texto, arquivo);
+	#endif
 	FILE * fil = fopen(arquivo, "w");
     fputs(texto, fil); // Não testado
 	//fwrite(texto, sizeof(char), tam_texto, fil);
