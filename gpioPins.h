@@ -1,6 +1,6 @@
 /*
 * Biblioteca desenvolvida por Jeimison Moreno.
-* 
+* Controle de GPIO baseado em arquivos, por meio de device drivers.
 */
 #ifndef __GPIOController
 #define __GPIOController
