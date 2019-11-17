@@ -9,6 +9,7 @@
         "files.h": "c",
         "ioctl.h": "c",
         "string.h": "c",
-        "gpiopins.h": "c"
+        "gpiopins.h": "c",
+        "exceptions.h": "c"
     }
 }

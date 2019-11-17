@@ -1,6 +1,7 @@
 all: embdded-arm-linux
 
-CC = arm-linux-gnueabihf-
+#CC = arm-linux-gnueabihf-
+CC = 
 C_FLAGS = -Wall -std=gnu11 -ggdb
 
 
@@ -22,17 +23,16 @@ C_FLAGS := ${C_FLAGS} -fPIC
 
 # Estratégia de compilação: https://github.com/shenki/linux-i2c-example
 
-embdded-arm-linux: main.o gpioPins.o files.o linux.o
-	${CC}gcc ${L_FLAGS} main.o gpioPins.o files.o -o embdded-arm-linux
+# Objetos:
+OBJFILES = main.o gpioPins.o files.o linux.o http.o
+
+embdded-arm-linux: ${OBJFILES}
+	${CC}gcc ${L_FLAGS} ${OBJFILES} -o embdded-arm-linux
 	cp ./embdded-arm-linux ../sistemadearquivos/root/
-main.o: main.c
-	${CC}gcc -c main.c ${C_FLAGS} -o main.o
-gpioPins.o: gpioPins.c
-	${CC}gcc -c gpioPins.c ${C_FLAGS} -o gpioPins.o
-files.o: files.c
-	${CC}gcc -c files.c ${C_FLAGS} -o files.o
-linux.o: linux.c
-	${CC}gcc -c linux.c ${C_FLAGS} -o linux.o
+
+%.o: %.c
+	${CC}gcc -c $< ${C_FLAGS} -o $@
+
 
 init:
 	sudo cp S60embdded ../sistemadearquivos/etc/init.d/
