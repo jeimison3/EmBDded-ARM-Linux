@@ -36,6 +36,7 @@ void gpio_free(){
 }
 
 void pinMode(uint32_t pin, GPIO_DIRECTION dir){
+    #ifndef NO_GPIO
     if(pin >= MAX_GPIOS){
         FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
     }
@@ -47,9 +48,11 @@ void pinMode(uint32_t pin, GPIO_DIRECTION dir){
     char retPath[200];
     getGPIOStringProp(pin, "direction", retPath);
     escreve_arquivo(retPath, (dir ? "in" : "out"));
+    #endif
 }
 
 void digitalWrite(uint32_t pin, GPIO_VALUE val){
+    #ifndef NO_GPIO
     if(pin >= MAX_GPIOS){
         FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
     }
@@ -57,9 +60,11 @@ void digitalWrite(uint32_t pin, GPIO_VALUE val){
     char retPath[200];
     getGPIOStringProp(pin, "value", retPath);
     escreve_arquivo(retPath, (val ? "1" : "0") );
+    #endif
 }
 
 GPIO_VALUE digitalRead(uint32_t pin){
+    #ifndef NO_GPIO
     if(pin >= MAX_GPIOS){
         FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
     }
@@ -76,4 +81,7 @@ GPIO_VALUE digitalRead(uint32_t pin){
     #endif
     
     return (GPIO_VALUE) (ret[0] == '1');
+    #else
+    return LOW;
+    #endif
 }

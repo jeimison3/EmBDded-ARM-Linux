@@ -6,8 +6,16 @@
 #define __GPIOController
     #include <stdint.h>
 
-    #ifndef MAX_GPIOS
+    #ifdef BOARD_BEAGLEBONE
         #define MAX_GPIOS 256
+    #elif defined BOARD_RASPI3
+        #define MAX_GPIOS 40
+    #elif defined NOBOARD
+        #define NO_GPIO
+    #endif
+
+    #ifndef MAX_GPIOS
+        #define MAX_GPIOS 0
     #endif
 
     typedef enum{

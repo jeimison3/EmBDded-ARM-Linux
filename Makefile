@@ -1,9 +1,15 @@
 all: embdded-arm-linux
 
+# Compilador:
 #CC = arm-linux-gnueabihf-
 CC = 
+
 C_FLAGS = -Wall -std=gnu11 -ggdb
 
+# Trajeto:
+#C_FLAGS := ${C_FLAGS} -DBOARD_BEAGLEBONE
+#C_FLAGS := ${C_FLAGS} -DBOARD_RASPI3
+C_FLAGS := ${C_FLAGS} -DNOBOARD
 
 # Habilitar depuração?
 C_FLAGS := ${C_FLAGS} -DDEBUG
@@ -13,12 +19,10 @@ SSH_IPADDR = 192.168.1.3
 SSH_USR = osmc
 SSH_DESTPATH = /home/osmc/
 
-## Bibliotecas
-
-# Estático:
-#L_FLAGS = -static
 # Dinâmico:
 C_FLAGS := ${C_FLAGS} -fPIC
+
+
 
 
 # Estratégia de compilação: https://github.com/shenki/linux-i2c-example

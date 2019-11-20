@@ -1,15 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-#include "files.h"
+#include "files.h" // API de arquivos
 #include <string.h>
-
-#define MAX_GPIOS 256
-
-#include "gpioPins.h"
-
-#include "http.h"
+#include "gpioPins.h" // GPIO API
+#include "http.h" // Conexão web
 
 #define GPIO(X,Y) ((X*32)+Y)
 
@@ -26,12 +21,22 @@ int main(){
     #endif
     clock_t timerClk;
 
-    char retrn[4096];
+    char retrn[MESSAGE_MXSIZE] = {0};
+
+    int socket = web_socket_create("localhost", 8002);
+    if(socket != -1){
+        size_t sz = web_socket_read(socket, retrn);
+        if(sz>0) printf("R: %s\n", retrn);
+    }
+    char DADOS[] = {13, 0};
+    web_socket_write(socket, DADOS);
+
+    web_socket_close(socket, AC_Safe);
 
     
 
-    int res = httppost("www.google.com", "search", "q=batata", retrn);
-    if(res==0) printf("%s\n", retrn);
+    //int res = socket_connect("localhost", 8000, "", retrn);//httppost("localhost", "embdded/socket.php", "a=123", retrn);
+    //if(res==0) printf("%s\n", retrn);
 
     /*
     // Code 1

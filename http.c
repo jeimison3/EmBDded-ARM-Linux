@@ -81,3 +81,53 @@ int httppost(char* host, char* httpPath, char* content, char retorno[RETURN_SIZE
 
     return 0;
 }
+
+int web_socket_create(char* host, int port_no) {
+    int sock = 0; 
+    struct sockaddr_in serv_addr;
+    char buffer[1024] = {0}; 
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    { 
+        {FUNCTION_ERROR(-10, "Erro na criação do socket.")}
+        return -1; 
+    } 
+
+    // Transcrição de host -> ip
+
+    struct hostent *server = gethostbyname(host);
+    if (server == NULL) {FUNCTION_ERROR(-11, "Host não encontrado")}
+    memcpy(&serv_addr.sin_addr.s_addr,server->h_addr,server->h_length);
+
+    // // // // // // // // // // //
+   
+    serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_port = htons(port_no); 
+       
+    // Convert IPv4 and IPv6 addresses from text to binary form 
+    /*if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
+    { 
+        {FUNCTION_ERROR(-11, "Endereço inválido ou não suportado.")}
+        return -1; 
+    } */
+   
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+    { 
+        {FUNCTION_ERROR(-12, "Falha na conexão.")}
+        return -1; 
+    }
+
+    return sock;
+}
+
+int web_socket_write(int socket, char* msg){
+    return send( socket, msg, strlen(msg), 0 ); 
+}
+
+int web_socket_read(int socket, char retorno[RETURN_SIZE]){
+    return read( socket, retorno, RETURN_SIZE );
+}
+
+int web_socket_close(int socket, POSIXSafety option){
+    return shutdown( socket, option);
+}
+
