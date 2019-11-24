@@ -6,6 +6,14 @@
 #include "gpioPins.h" // GPIO API
 #include "http.h" // Conexão web
 
+typedef enum {
+    atrBOOL = 1,
+    atrINT = 2,
+    atrSTR = 3,
+    atrFLOAT = 4,
+    atrVOID = 5,
+} TypeAtrib;
+
 #define GPIO(X,Y) ((X*32)+Y)
 
 #define delayMicrosseconds(US, CLK_TIME) \
@@ -15,6 +23,17 @@
 #define delay(MS, CLK_TIME) \
         delayMicrosseconds(MS*1000, CLK_TIME)
 
+#ifndef CLIENT_NAME
+    #define CLIENT_NAME "GUESTBOARD"
+#endif
+
+
+int publishPort(char name[100], TypeAtrib type, int sockt){
+    char msg[200];
+    sprintf(msg, "%c%c%s%c", (char) 6 ,(char)type, name, (char)13);
+    return web_socket_write(sockt, msg);
+}
+
 int main(){
     #ifdef DEBUG
     printf("Compilado com -DDEBUG\n");
@@ -23,15 +42,42 @@ int main(){
 
     char retrn[MESSAGE_MXSIZE] = {0};
 
-    int socket = web_socket_create("localhost", 8002);
+    int socket = web_socket_create("localhost", 8000);
     if(socket != -1){
-        size_t sz = web_socket_read(socket, retrn);
-        if(sz>0) printf("R: %s\n", retrn);
-    }
-    char DADOS[] = {13, 0};
-    web_socket_write(socket, DADOS);
+        
+        char myname[300];
+        sprintf(myname, "%c%s%c", (char) 1, CLIENT_NAME, 13);
+        int sent = web_socket_write(socket, myname);
 
-    web_socket_close(socket, AC_Safe);
+        int sz = web_socket_read(socket, retrn);
+        if(sz>0) printf("R: %s (%d bytes)\n", retrn, sz);
+
+        char name[100];
+
+        int L,C;
+        #ifdef BOARD_BEAGLEBONE
+        for(L=0; L < 4; L++ ){
+            for(C = 0; C < 32; C++){
+                sprintf(name, "GPIO%d", GPIO(L,C));
+                int ret = publishPort(name, atrBOOL, socket);
+                printf("%s> %s\n", name, (ret? "OK" : "FAILED"));
+            }
+        }
+        #elif defined NOBOARD
+        for(L=0; L < 1; L++ ){
+            for(C = 0; C < 32; C++){
+                sprintf(name, "GPIO%d", GPIO(L,C));
+                int ret = publishPort(name, atrBOOL, socket);
+                printf("%s> %s\n", name, (ret? "OK" : "FAILED"));
+            }
+        }
+        #endif
+        delay(1000, timerClk);
+        sprintf(myname, "%c%c", (char) 255, (char) 13);
+        sent = web_socket_write(socket, myname); // Close
+    }
+
+    web_socket_close(socket, MY_SHUT_RDWR);
 
     
 

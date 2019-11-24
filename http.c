@@ -10,7 +10,7 @@
 
 #include "http.h"
 
-int httppost(char* host, char* httpPath, char* content, char retorno[RETURN_SIZE]) {
+int httppost(char* host, char* httpPath, char* content, char retorno[MESSAGE_MXSIZE]) {
     /* first what are we going to send and where are we going to send it? */
     int portno =        80;
     char *message_fmt = "POST /%s HTTP/1.0\r\nHost: %s\r\nContent-Length: %d\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n%s";
@@ -58,8 +58,8 @@ int httppost(char* host, char* httpPath, char* content, char retorno[RETURN_SIZE
     } while (sent < total);
 
     /* receive the response */
-    memset(retorno,0,RETURN_SIZE);
-    total = RETURN_SIZE-1;
+    memset(retorno,0,MESSAGE_MXSIZE);
+    total = MESSAGE_MXSIZE-1;
     received = 0;
     do {
         bytes = read(sockfd,retorno+received,total-received);
@@ -85,7 +85,8 @@ int httppost(char* host, char* httpPath, char* content, char retorno[RETURN_SIZE
 int web_socket_create(char* host, int port_no) {
     int sock = 0; 
     struct sockaddr_in serv_addr;
-    char buffer[1024] = {0}; 
+    //char buffer[1024] = {0}; 
+    //socket_fd = socket(AF_UNIX, SOCK_STREAM, 0); // AF_INET
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
     { 
         {FUNCTION_ERROR(-10, "Erro na criação do socket.")}
@@ -123,8 +124,19 @@ int web_socket_write(int socket, char* msg){
     return send( socket, msg, strlen(msg), 0 ); 
 }
 
-int web_socket_read(int socket, char retorno[RETURN_SIZE]){
-    return read( socket, retorno, RETURN_SIZE );
+int web_socket_read(int socket, char retorno[MESSAGE_MXSIZE]){
+    /*
+    int lido = 0;
+    char dt[1];
+    while(1){
+        int ret = read( socket, dt, 1 );
+        if(ret == 1){
+            retorno[lido++] = dt[0];
+            printf(".");
+        } else break;
+    }
+    return lido;*/
+    return recv(socket, retorno, MESSAGE_MXSIZE, 0);
 }
 
 int web_socket_close(int socket, POSIXSafety option){

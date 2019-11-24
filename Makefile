@@ -6,10 +6,18 @@ CC =
 
 C_FLAGS = -Wall -std=gnu11 -ggdb
 
+
+
+# Nome do cliente
+BOARDNAME = Placa1
+
 # Trajeto:
 #C_FLAGS := ${C_FLAGS} -DBOARD_BEAGLEBONE
 #C_FLAGS := ${C_FLAGS} -DBOARD_RASPI3
 C_FLAGS := ${C_FLAGS} -DNOBOARD
+
+
+C_FLAGS := ${C_FLAGS} -DCLIENT_NAME=\"${BOARDNAME}\"
 
 # Habilitar depuração?
 C_FLAGS := ${C_FLAGS} -DDEBUG
