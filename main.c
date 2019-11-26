@@ -50,6 +50,8 @@ void retrive_mensagens(int socket){
     int sz = web_socket_read(socket, retrn);
     if(sz <= 0) return;
 
+    printf("RECEBIDO + %d BYTES\n",sz);
+
     embdded_message msg;
     while( (sz = message_read(&msg, retrn, sz)) >=0 ){
         switch (msg.mHeader) {
@@ -74,6 +76,12 @@ void retrive_mensagens(int socket){
                         pinMode(num, INPUT);
 
                     } else {
+                        int i=0;
+                        for(;i<=atributos.i;i++){
+                            if(atributos.atributos[i].indexDimension == num){
+                                libera_id_controlador_atributos(&atributos, i);
+                            }
+                        }
                         pinMode(num, OUTPUT);
                         digitalWrite( num, (GPIO_VALUE) (msg.paramsStr[1][0] == '1') );
                     }
@@ -85,7 +93,6 @@ void retrive_mensagens(int socket){
             char porta[40];
             int num;
             sscanf( msg.paramsStr[0], "%4s%d", porta, &num );
-            
             if(msg.atrType == ATRIB_TYPE_BOOL){
                 atributo atr;
                 atr.dir = INPUT;
@@ -122,7 +129,7 @@ int main(){
     printf("Sz: %d\n", atributos.i+1);
 
 
-    int socket = web_socket_create("localhost", 400, 8000);
+    int socket = web_socket_create("localhost", 1000, 8000);
     if(socket != -1){
         
         char myname[300];
@@ -155,8 +162,10 @@ int main(){
         #endif
 
         while(1){
-            
-            retrive_mensagens(socket);
+            timerClk = clock(); 
+            while( clock() - timerClk <= 500){
+                retrive_mensagens(socket);
+            }
             //printf("Atributos pub: %d\n", atributos.i+1);
             int i;
             for(i=0; i <= atributos.i; i++){
@@ -164,66 +173,21 @@ int main(){
                 char pca[100];
                 publish_controlador_atributos(&atributos, i, pca);
                 #ifdef DEBUG
-                printf("MSG: ");
-                dump_chars(pca, 100);
-                printf("\n");
+                //printf("MSG: ");
+                //dump_chars(pca, 100);
+                //printf("\n");
                 #endif
-                
                 web_socket_write(socket, pca);
             }
 
-            delay(300, timerClk);
+            //delay(300, timerClk);
         }
-
         delay(1000, timerClk);
         sprintf(myname, "%c%c", (char) 255, (char) 13);
         int sent = web_socket_write(socket, myname); // Close
     }
 
     web_socket_close(socket, MY_SHUT_RDWR);
-
-    
-
-    //int res = socket_connect("localhost", 8000, "", retrn);//httppost("localhost", "embdded/socket.php", "a=123", retrn);
-    //if(res==0) printf("%s\n", retrn);
-
-    /*
-    // Code 1
-    pinMode(GPIO(0,2), OUTPUT);
-    pinMode(GPIO(0,4), OUTPUT);
-
-    while(1){
-        digitalWrite(GPIO(0,2), !digitalRead(GPIO(0,2)) );
-        delay(1000, timerClk);
-    }
-    */
-
-
-    /*
-    // Code 2
-    char input[200];
-    while(1){
-        le_arquivo("/dev/ttyO0", input);
-        if(strlen(input) > 0){
-            printf("%s", input);
-        }
-    }
-
-    exit(0);
-
-    
-
-    pinMode(GPIO(1,21), OUTPUT);
-    pinMode(GPIO(1,22), OUTPUT);
-    pinMode(GPIO(1,23), OUTPUT);
-    pinMode(GPIO(1,24), OUTPUT);
-
-    while(1){
-        digitalWrite(GPIO(1,21), !digitalRead(GPIO(1,21)) );
-        delay(1000, timerClk);
-    }
-    */
-    
     
     return 0;
 }

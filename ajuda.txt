@@ -1,2 +1,5 @@
 sudo /opt/lampp/xampp startmysql
 sudo /opt/lampp/xampp startapache
+
+
+http://localhost/embdded/cliente.php?cliente=Placa1&atr=GPIO31&dir=OUT&v=1

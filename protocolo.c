@@ -96,7 +96,7 @@ int message_read(embdded_message * msg, char * inp, int len){
         #ifdef DEBUG
         printf("ArgQ: %d\n\n", q);
         #endif
-        if(len == msgLen) return -1;
+        //if(len == msgLen) return -1;
         return len-msgLen;
     }
     return -1;
