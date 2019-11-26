@@ -11,9 +11,6 @@ typedef enum{
     MY_SHUT_RDWR, // Stop both reception and transmission.
 } POSIXSafety;
 
-typedef struct{
-    char host[200];
-} socket_dt;
 
 int web_socket_create(char* host, int port_no);
 int web_socket_write(int socket, char* msg);

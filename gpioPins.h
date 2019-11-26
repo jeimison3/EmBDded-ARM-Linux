@@ -30,14 +30,14 @@
 
     /*
     Define direção da porta GPIO.
-    @param pin: 0..255
+    @param pin: 0..MAX_GPIOS
     @param dir: INPUT|OUTPUT
     */
     void pinMode(uint32_t pin, GPIO_DIRECTION dir);
 
     /*
     Escrita digital no pino especificado.
-    @param pin: unsigned 0..255
+    @param pin: unsigned 0..MAX_GPIOS
     @param val: HIGH|LOW
     */
     void digitalWrite(uint32_t pin, GPIO_VALUE val);
@@ -45,7 +45,7 @@
 
     /*
     Leitura digital do pino especificado.
-    @param pin: unsigned 0..255
+    @param pin: unsigned 0..MAX_GPIOS
     @return HIGH|LOW
     */
     GPIO_VALUE digitalRead(uint32_t pin);

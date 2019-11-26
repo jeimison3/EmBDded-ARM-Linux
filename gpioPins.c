@@ -6,6 +6,7 @@
 #include "exceptions.h"
 #include "gpioPins.h"
 #include "files.h"
+#include <sys/stat.h> 
 
 /*
 * 64 * 4 = 256 pinos -> uint64_t[4]

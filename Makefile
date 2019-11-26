@@ -36,7 +36,7 @@ C_FLAGS := ${C_FLAGS} -fPIC
 # Estratégia de compilação: https://github.com/shenki/linux-i2c-example
 
 # Objetos:
-OBJFILES = main.o gpioPins.o files.o linux.o http.o
+OBJFILES = main.o gpioPins.o files.o linux.o http.o protocolo.o
 
 embdded-arm-linux: ${OBJFILES}
 	${CC}gcc ${L_FLAGS} ${OBJFILES} -o embdded-arm-linux
