@@ -87,7 +87,7 @@ GPIO_VALUE digitalRead(uint32_t pin){
     
     return (GPIO_VALUE) (ret[0] == '1');
     #else
-    return LOW;
     printf("~GPIO%d lido como LOW~\n", pin);
+    return LOW;
     #endif
 }

@@ -6,6 +6,8 @@
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
 #include <netdb.h> /* struct hostent, gethostbyname */
 
+#include <sys/time.h>
+
 #include "exceptions.h"
 
 #include "http.h"
@@ -82,7 +84,7 @@ int httppost(char* host, char* httpPath, char* content, char retorno[MESSAGE_MXS
     return 0;
 }
 
-int web_socket_create(char* host, int port_no) {
+int web_socket_create(char* host, int timeout_ms, int port_no) {
     int sock = 0; 
     struct sockaddr_in serv_addr;
     //char buffer[1024] = {0}; 
@@ -110,6 +112,12 @@ int web_socket_create(char* host, int port_no) {
         {FUNCTION_ERROR(-11, "Endereço inválido ou não suportado.")}
         return -1; 
     } */
+
+    /* Linux */
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = timeout_ms;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
    
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
     { 

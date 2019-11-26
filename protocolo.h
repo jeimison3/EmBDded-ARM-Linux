@@ -10,6 +10,7 @@ typedef enum{
     MESSAGE_CLIENT_PUB_NEW_ATRIBUTO = (char) 6,
     MESSAGE_CLIENT_SET_ESTADO = (char) 7,
     MESSAGE_CLIENT_SET_EXPORT = (char) 8,
+    MESSAGE_CLIENT_PUB_ESTADO = (char) 9,
     MESSAGE_CONNECTION_CLOSE = (char) 255,
     MESSAGE_ENDL = (char) 13,
     MESSAGE_NEXTPARAM = (char) 14,
@@ -32,6 +33,7 @@ typedef struct{
 } embdded_message;
 
 int message_read(embdded_message * msg, char * inp, int len);
+void dump_chars(char* linha, int maxLen);
 
 
 #endif

@@ -12,7 +12,7 @@ typedef enum{
 } POSIXSafety;
 
 
-int web_socket_create(char* host, int port_no);
+int web_socket_create(char* host, int timeout_ms, int port_no);
 int web_socket_write(int socket, char* msg);
 int web_socket_read(int socket, char retorno[MESSAGE_MXSIZE]);
 int web_socket_close(int socket, POSIXSafety option);

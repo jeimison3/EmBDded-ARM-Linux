@@ -14,8 +14,17 @@ int hasNext(char* inp, int len){
     return 0;
 }
 
+void dump_chars(char* linha, int maxLen){
+    int i = 0;
+    while(i < maxLen && linha[i] != '\0'){
+        printf("[%d]",linha[i++]);
+    }
+}
+
 //sprintf(teste, "%c%s%c%s%c", MESSAGE_CLIENT_PUB_NEW_ATRIBUTO, "Teste1", MESSAGE_NEXTPARAM, "Teste2", MESSAGE_ENDL );
 int message_read(embdded_message * msg, char * inp, int len){
+    if(len == 0) return -1;
+    
     int msgLen;
     if((msgLen = hasNext(inp, len))){
         char inpMsg[msgLen];
@@ -23,6 +32,10 @@ int message_read(embdded_message * msg, char * inp, int len){
         strncpy(inpMsg, inp, msgLen-1);
         memmove(inp, &inp[msgLen], len-msgLen);
         //inp = &inp[msgLen];
+
+        #ifdef DEBUG
+        printf("RLine: %s | SIZE: %d\n", inpMsg, msgLen);
+        #endif
 
 
         msg->mHeader = (message_type) inpMsg[0];
@@ -57,6 +70,9 @@ int message_read(embdded_message * msg, char * inp, int len){
 
             #ifdef DEBUG
             printf("Arg[%d]: %s\n", q, msg->paramsStr[q]);
+            printf("Arg[%d]: ", q);
+            dump_chars(msg->paramsStr[q], 40);
+            printf("\n");
             #endif
             
 
@@ -66,17 +82,22 @@ int message_read(embdded_message * msg, char * inp, int len){
         }
 
         // Preenche com ultimo válido
-        strncpy(msg->paramsStr[q], lch, msgLen - (inpMsg-lch) -1 );
+        strncpy(msg->paramsStr[q], lch+1, msgLen - (inpMsg-lch) -1 );
         msg->paramsStr[q][msgLen - (inpMsg-lch)-1] = '\0';
         
         #ifdef DEBUG
         printf("Arg[%d]: %s\n", q, msg->paramsStr[q]);
+        printf("Arg[%d]: ", q);
+        dump_chars(msg->paramsStr[q], 40);
+        printf("\n");
         #endif
+        
         q++;
         #ifdef DEBUG
         printf("ArgQ: %d\n\n", q);
         #endif
+        if(len == msgLen) return -1;
         return len-msgLen;
     }
-    return 0;
+    return -1;
 }

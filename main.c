@@ -5,7 +5,8 @@
 #include <string.h>
 #include "gpioPins.h" // GPIO API
 #include "http.h" // Conexão web
-#include "protocolo.h"
+#include "protocolo.h" // Operações byte-a-byte
+#include "atributosControl.h"
 
 typedef enum {
     atrBOOL = 1,
@@ -30,6 +31,7 @@ typedef enum {
 
 
 char retrn[MESSAGE_MXSIZE] = {0};
+controlador_atributos atributos;
 
 
 int publishPort(char name[100], TypeAtrib type, GPIO_DIRECTION dir, int sockt){
@@ -49,22 +51,31 @@ void retrive_mensagens(int socket){
     if(sz <= 0) return;
 
     embdded_message msg;
-    while((sz = message_read(&msg, retrn, sz))){
+    while( (sz = message_read(&msg, retrn, sz)) >=0 ){
         switch (msg.mHeader) {
         case MESSAGE_CLIENT_SET_ESTADO:{
+            
             char porta[40];
             int num;
-            char valor[40];
             sscanf( msg.paramsStr[0], "%4s%d", porta, &num );
-            sscanf( msg.paramsStr[1], "%s", valor );
-            if(! (valor[0] == MESSAGE_RESPONSE_ERROR) ){
+            if(! (msg.paramsStr[1][0] == MESSAGE_RESPONSE_ERROR) ){
                 if(msg.atrType == ATRIB_TYPE_BOOL){
                     if(msg.needExport){
+                        atributo atr;
+                        atr.dir = INPUT;
+                        atr.indexDimension = num;
+                        atr.classe = GPIO_REAL;
+                        atr.isVirtual = 0;
+                        strcpy(atr.nome, msg.paramsStr[0]);
+                        strcpy(atr.valor, msg.paramsStr[1]);
+
+                        add_controlador_atributos(&atributos, atr);
+
                         pinMode(num, INPUT);
-                        
+
                     } else {
                         pinMode(num, OUTPUT);
-                        digitalWrite( num, (GPIO_VALUE) (valor[0] == '1') );
+                        digitalWrite( num, (GPIO_VALUE) (msg.paramsStr[1][0] == '1') );
                     }
                 }
             }
@@ -76,15 +87,28 @@ void retrive_mensagens(int socket){
             sscanf( msg.paramsStr[0], "%4s%d", porta, &num );
             
             if(msg.atrType == ATRIB_TYPE_BOOL){
+                atributo atr;
+                atr.dir = INPUT;
+                atr.indexDimension = num;
+                atr.classe = GPIO_REAL;
+                atr.isVirtual = 0;
+                strcpy(atr.nome, msg.paramsStr[0]);
+                strcpy(atr.valor, msg.paramsStr[1]);
+
+                add_controlador_atributos(&atributos, atr);
+                
                 pinMode(num, INPUT);
             }
             break;
         }
         
         default:
+            printf("FALHA HEADER %d\n",msg.mHeader);
             break;
         }
+
     }
+
 }
 
 int main(){
@@ -93,8 +117,12 @@ int main(){
     #endif
     clock_t timerClk;
 
+    inicia_controlador_atributos(&atributos);
 
-    int socket = web_socket_create("localhost", 8000);
+    printf("Sz: %d\n", atributos.i+1);
+
+
+    int socket = web_socket_create("localhost", 400, 8000);
     if(socket != -1){
         
         char myname[300];
@@ -127,7 +155,23 @@ int main(){
         #endif
 
         while(1){
+            
             retrive_mensagens(socket);
+            //printf("Atributos pub: %d\n", atributos.i+1);
+            int i;
+            for(i=0; i <= atributos.i; i++){
+                preform_newRead_atributo(&atributos, i);
+                char pca[100];
+                publish_controlador_atributos(&atributos, i, pca);
+                #ifdef DEBUG
+                printf("MSG: ");
+                dump_chars(pca, 100);
+                printf("\n");
+                #endif
+                
+                web_socket_write(socket, pca);
+            }
+
             delay(300, timerClk);
         }
 
