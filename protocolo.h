@@ -9,6 +9,7 @@ typedef enum{
     MESSAGE_CLIENT_RECV_SELF_ESTADO = (char) 5,
     MESSAGE_CLIENT_PUB_NEW_ATRIBUTO = (char) 6,
     MESSAGE_CLIENT_SET_ESTADO = (char) 7,
+    MESSAGE_CLIENT_SET_EXPORT = (char) 8,
     MESSAGE_CONNECTION_CLOSE = (char) 255,
     MESSAGE_ENDL = (char) 13,
     MESSAGE_NEXTPARAM = (char) 14,
@@ -25,6 +26,7 @@ typedef enum{
 
 typedef struct{
     message_type mHeader;
+    int needExport;
     atrib_type atrType;
     char paramsStr[3][40];
 } embdded_message;

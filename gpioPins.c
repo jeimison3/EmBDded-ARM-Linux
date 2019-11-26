@@ -49,6 +49,8 @@ void pinMode(uint32_t pin, GPIO_DIRECTION dir){
     char retPath[200];
     getGPIOStringProp(pin, "direction", retPath);
     escreve_arquivo(retPath, (dir ? "in" : "out"));
+    #else
+    printf("~GPIO%d exportado como %s~\n", pin, (dir ? "IN" : "OUT"));
     #endif
 }
 
@@ -61,6 +63,8 @@ void digitalWrite(uint32_t pin, GPIO_VALUE val){
     char retPath[200];
     getGPIOStringProp(pin, "value", retPath);
     escreve_arquivo(retPath, (val ? "1" : "0") );
+    #else
+    printf("~GPIO%d escrito como %s~\n", pin, (val ? "HIGH" : "LOW"));
     #endif
 }
 
@@ -84,5 +88,6 @@ GPIO_VALUE digitalRead(uint32_t pin){
     return (GPIO_VALUE) (ret[0] == '1');
     #else
     return LOW;
+    printf("~GPIO%d lido como LOW~\n", pin);
     #endif
 }

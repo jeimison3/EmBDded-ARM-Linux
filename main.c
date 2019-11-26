@@ -34,7 +34,7 @@ char retrn[MESSAGE_MXSIZE] = {0};
 
 int publishPort(char name[100], TypeAtrib type, GPIO_DIRECTION dir, int sockt){
     char msg[200];
-    sprintf(msg, "%c%c%c%s%c", MESSAGE_CLIENT_PUB_NEW_ATRIBUTO, (char)type, ((char)dir)+1, name, MESSAGE_ENDL);
+    sprintf(msg, "%c%c%c%s%c", MESSAGE_CLIENT_PUB_NEW_ATRIBUTO, (char)type, (char) (dir ? 2 : 1) , name, MESSAGE_ENDL);
     return web_socket_write(sockt, msg);
 }
 
@@ -59,12 +59,27 @@ void retrive_mensagens(int socket){
             sscanf( msg.paramsStr[1], "%s", valor );
             if(! (valor[0] == MESSAGE_RESPONSE_ERROR) ){
                 if(msg.atrType == ATRIB_TYPE_BOOL){
-                    pinMode(num, OUTPUT);
-                    digitalWrite( num, (GPIO_VALUE) (valor[0] == '1') );
+                    if(msg.needExport){
+                        pinMode(num, INPUT);
+                        
+                    } else {
+                        pinMode(num, OUTPUT);
+                        digitalWrite( num, (GPIO_VALUE) (valor[0] == '1') );
+                    }
                 }
             }
             break;
+        }
+        case MESSAGE_CLIENT_SET_EXPORT:{
+            char porta[40];
+            int num;
+            sscanf( msg.paramsStr[0], "%4s%d", porta, &num );
+            
+            if(msg.atrType == ATRIB_TYPE_BOOL){
+                pinMode(num, INPUT);
             }
+            break;
+        }
         
         default:
             break;
@@ -107,11 +122,9 @@ int main(){
                 sprintf(name, "GPIO%d", GPIO(L,C));
                 publishPort(name, atrBOOL, OUTPUT, socket);
                 require_estado(socket, GPIO(L,C));
-                
             }
         }
         #endif
-        printf("\n");
 
         while(1){
             retrive_mensagens(socket);

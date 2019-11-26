@@ -36,10 +36,12 @@ int message_read(embdded_message * msg, char * inp, int len){
             case MESSAGE_CLIENT_PUB_NEW_ATRIBUTO: // Não deveria vir, mas vai que
             case MESSAGE_CLIENT_SET_ESTADO:
                 msg->atrType = (atrib_type) inpMsg[1];
+                msg->needExport = inpMsg[2] -1;
                 #ifdef DEBUG
+                printf("Export: %d\n", msg->needExport);
                 printf("AtribType: %d\n", msg->atrType);
                 #endif
-                initPArgs = 2; // Inicia do [2]
+                initPArgs = 3; // Inicia do [3]
                 break;
             default:
                 initPArgs=1;
@@ -72,7 +74,7 @@ int message_read(embdded_message * msg, char * inp, int len){
         #endif
         q++;
         #ifdef DEBUG
-        printf("ArgQ: %d\n", q);
+        printf("ArgQ: %d\n\n", q);
         #endif
         return len-msgLen;
     }
