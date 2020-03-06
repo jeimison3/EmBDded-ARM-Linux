@@ -7,9 +7,9 @@
     #include <stdint.h>
 
     #ifdef BOARD_BEAGLEBONE
-        #define MAX_GPIOS 256
+        #define MAX_GPIOS 128
     #elif defined BOARD_RASPI3
-        #define MAX_GPIOS 40
+        #define MAX_GPIOS 27
     #elif defined NOBOARD
         #define NO_GPIO
     #endif
@@ -33,7 +33,7 @@
     @param pin: 0..MAX_GPIOS
     @param dir: INPUT|OUTPUT
     */
-    void pinMode(uint32_t pin, GPIO_DIRECTION dir);
+    int pinMode(uint32_t pin, GPIO_DIRECTION dir);
 
     /*
     Escrita digital no pino especificado.

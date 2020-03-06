@@ -36,7 +36,16 @@ void gpio_free(){
     /* Vou pensar se é útil... */
 }
 
-void pinMode(uint32_t pin, GPIO_DIRECTION dir){
+int pinMode(uint32_t pin, GPIO_DIRECTION dir){
+    #ifdef BOARD_BEAGLEBONE
+    switch(pin){
+        case 12:
+        case 13:
+            return 0;
+        default:
+            break;
+    }
+    #endif
     #ifndef NO_GPIO
     if(pin >= MAX_GPIOS){
         FUNCTION_ERROR(-2, "PIN EXCEEDS RANGE")
@@ -46,11 +55,19 @@ void pinMode(uint32_t pin, GPIO_DIRECTION dir){
     sprintf(pinStr, "%d", pin);
     escreve_arquivo("/sys/class/gpio/export", pinStr);
 
-    char retPath[200];
-    getGPIOStringProp(pin, "direction", retPath);
-    escreve_arquivo(retPath, (dir ? "in" : "out"));
+    // Verifica se criou:
+    sprintf(pinStr, "/sys/class/gpio/gpio%d/", pin);
+    struct stat sb;
+    int isDir = stat(pinStr, &sb) == 0 && S_ISDIR(sb.st_mode);
+    if (!isDir) return 0;
+
+
+    getGPIOStringProp(pin, "direction", pinStr);
+    escreve_arquivo(pinStr, (dir ? "in" : "out"));
+    return 1;
     #else
     printf("~GPIO%d exportado como %s~\n", pin, (dir ? "IN" : "OUT"));
+    return 1;
     #endif
 }
 

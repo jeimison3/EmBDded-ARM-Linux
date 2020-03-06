@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "i2cdevs.h"
+
 
 void inicia_controlador_atributos(controlador_atributos * ca){
     ca->i = -1;
@@ -41,7 +43,15 @@ void preform_newRead_atributo(controlador_atributos * ca, int id){
             sprintf(ca->atributos[id].valor, "%c%c", valor, '\0');
         }
         break;
-    
+    case I2C_DS3231_VIRTUAL:{
+        #ifdef BOARD_BEAGLEBONE
+        char bufIn[2];
+        int lido = read_register(a.indexDimension, 0x11, bufIn, 2);
+        int valor = bufIn[1] << 8 | bufIn[0];
+        printf("LIDO %d BYTES DO I2C\n", lido);
+        sprintf(ca->atributos[id].valor, "%d%c", valor, '\0');
+        #endif
+        }
     default:
         break;
     }

@@ -7,6 +7,8 @@
 #include "http.h" // Conexão web
 #include "protocolo.h" // Operações byte-a-byte
 #include "atributosControl.h"
+#include "i2cdevs.h"
+#include "pthread.h"
 
 typedef enum {
     atrBOOL = 1,
@@ -27,6 +29,9 @@ typedef enum {
 
 #ifndef CLIENT_NAME
     #define CLIENT_NAME "GUESTBOARD"
+#endif
+#ifndef SERVERIP
+    #define SERVERIP "127.0.0.1"
 #endif
 
 
@@ -50,7 +55,9 @@ void retrive_mensagens(int socket){
     int sz = web_socket_read(socket, retrn);
     if(sz <= 0) return;
 
+    #ifdef DEBUG
     printf("RECEBIDO + %d BYTES\n",sz);
+    #endif
 
     embdded_message msg;
     while( (sz = message_read(&msg, retrn, sz)) >=0 ){
@@ -118,6 +125,26 @@ void retrive_mensagens(int socket){
 
 }
 
+void *thread_publicar(void *pargs){
+    int socketid = (int) pargs;
+    int i;
+    printf("Thread publicar criada.\n");
+    while(1){
+        for(i=0; i <= atributos.i; i++){
+            printf("Lendo...");
+            preform_newRead_atributo(&atributos, i);
+            char pca[100];
+            publish_controlador_atributos(&atributos, i, pca);
+            #ifdef DEBUG
+            //printf("MSG: ");
+            //dump_chars(pca, 100);
+            //printf("\n");
+            #endif
+            web_socket_write(socketid, pca);
+        }
+    }
+}
+
 int main(){
     #ifdef DEBUG
     printf("Compilado com -DDEBUG\n");
@@ -129,7 +156,7 @@ int main(){
     printf("Sz: %d\n", atributos.i+1);
 
 
-    int socket = web_socket_create("localhost", 1000, 8000);
+    int socket = web_socket_create  ( SERVERIP, 300, 8000);
     if(socket != -1){
         
         char myname[300];
@@ -138,6 +165,20 @@ int main(){
 
         //int sz = web_socket_read(socket, retrn);
         //if(sz>0) printf("R: %s (%d bytes)\n", retrn, sz);
+        /*
+        int ds3231 = get_ds3231();
+        atributo atr;
+        atr.dir = INPUT;
+        atr.indexDimension = ds3231;
+        atr.classe = I2C_DS3231_VIRTUAL;
+        atr.isVirtual = 1;
+        strcpy(atr.nome, "DS3231");
+        strcpy(atr.valor, "");
+        add_controlador_atributos(&atributos, atr);
+
+        publishPort(atr.nome, atrSTR, INPUT, socket);
+        */
+        
 
         char name[40];
 
@@ -146,8 +187,21 @@ int main(){
         for(L=0; L < 4; L++ ){
             for(C = 0; C < 32; C++){
                 sprintf(name, "GPIO%d", GPIO(L,C));
-                publishPort(name, atrBOOL, OUTPUT, socket);
-                require_estado(socket, GPIO(L,C));
+                if(pinMode(GPIO(L,C), INPUT)){
+                    publishPort(name, atrBOOL, OUTPUT, socket);
+                    require_estado(socket, GPIO(L,C));
+                }
+                //printf("%s> %s\n", name, (ret? "OK" : "FAILED"));
+            }
+        }
+        #elif defined BOARD_RASPI3
+        for(L=0; L < 1; L++ ){
+            for(C = 0; C < 27; C++){
+                sprintf(name, "GPIO%d", GPIO(L,C));
+                if(pinMode(GPIO(L,C), INPUT)){
+                    publishPort(name, atrBOOL, OUTPUT, socket);
+                    require_estado(socket, GPIO(L,C));
+                }
                 //printf("%s> %s\n", name, (ret? "OK" : "FAILED"));
             }
         }
@@ -160,25 +214,20 @@ int main(){
             }
         }
         #endif
+        #ifdef DEBUG
+        printf("Iniciando com %d INPUTs.\n", atributos.i+1);
+        #endif
+        pthread_t thId;
+        
+        pthread_create(&thId, NULL, thread_publicar, (void*) socket );
 
         while(1){
             timerClk = clock(); 
             while( clock() - timerClk <= 500){
                 retrive_mensagens(socket);
+                printf(".");
             }
             //printf("Atributos pub: %d\n", atributos.i+1);
-            int i;
-            for(i=0; i <= atributos.i; i++){
-                preform_newRead_atributo(&atributos, i);
-                char pca[100];
-                publish_controlador_atributos(&atributos, i, pca);
-                #ifdef DEBUG
-                //printf("MSG: ");
-                //dump_chars(pca, 100);
-                //printf("\n");
-                #endif
-                web_socket_write(socket, pca);
-            }
 
             //delay(300, timerClk);
         }
